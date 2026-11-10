@@ -1,0 +1,28 @@
+flowchart LR
+    CPU["PicoRV32<br/>RV32IM, 27 MHz"]
+    DEC{"address<br/>decode"}
+    ROM["ROM 8 KB<br/>0x0000_0000<br/>firmware, read-only"]
+    RAM["RAM 8 KB<br/>0x0000_2000<br/>.data .bss stack"]
+    ERR["unmapped<br/>reads 0"]
+    BR["APB bridge<br/>SETUP / ACCESS<br/>wait states, PSLVERR"]
+    IC{"APB<br/>interconnect"}
+    UART["UART 0x1000_0000<br/>TX + RX FIFOs, 16 B each<br/>TX backpressure"]
+    GPIO["GPIO 0x1000_1000<br/>6 LEDs"]
+    PERF["PERF 0x1000_2000<br/>8 x 32-bit counters"]
+    DEF["default slave<br/>PSLVERR"]
+    PC(["PC via USB-UART<br/>115200 8N1"])
+
+    CPU -- native bus --> DEC
+    DEC --> ROM
+    DEC --> RAM
+    DEC --> ERR
+    DEC --> BR
+    BR -- APB --> IC
+    IC --> UART
+    IC --> GPIO
+    IC --> PERF
+    IC --> DEF
+    UART <--> PC
+    UART -. events .-> PERF
+    BR -. events .-> PERF
+    DEC -. events .-> PERF
